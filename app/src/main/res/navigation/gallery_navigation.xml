@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/gallery_navigation"
+    app:startDestination="@id/galleryFragment">
+
+    <fragment
+        android:id="@+id/galleryFragment"
+        android:name="com.usbcameratest.jetpack_practice.pixabay.GalleryFragment"
+        android:label="相册"
+        tools:layout="@layout/fragment_gallery">
+        <action
+            android:id="@+id/action_galleryFragment_to_photoFragment"
+            app:destination="@id/photoFragment"
+            app:enterAnim="@anim/slide_from_right"
+            app:exitAnim="@anim/slide_to_left" />
+    </fragment>
+    <fragment
+        android:id="@+id/photoFragment"
+        android:name="com.usbcameratest.jetpack_practice.pixabay.PhotoFragment"
+        android:label="图片"
+        tools:layout="@layout/fragment_photo" />
+</navigation>

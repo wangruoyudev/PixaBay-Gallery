@@ -1,5 +1,6 @@
 package com.usbcameratest.jetpack_practice.pixabay;
 
+import android.app.Activity;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -121,7 +122,7 @@ public class GalleryFragment extends Fragment {
         });
 
         RecyclerView recyclerView = binding.galleryRecycleView;
-        adapter = new GalleryAdapter();
+        adapter = new GalleryAdapter(requireActivity());
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
         recyclerView.setAdapter(adapter);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {

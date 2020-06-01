@@ -1,5 +1,7 @@
 package com.usbcameratest.jetpack_practice.pixabay;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,14 +26,16 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.usbcameratest.jetpack_practice.R;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.Inflater;
 
 import io.supercharge.shimmerlayout.ShimmerLayout;
 
 public class GalleryAdapter extends ListAdapter<PixabayUrl, GalleryAdapter.MyViewHolder> {
     private static final String TAG = "GalleryAdapter";
-
-    protected GalleryAdapter() {
+    private Activity activity;
+    protected GalleryAdapter(Activity activity) {
         super(new DiffUtil.ItemCallback<PixabayUrl>() {
             @Override
             public boolean areItemsTheSame(@NonNull PixabayUrl oldItem, @NonNull PixabayUrl newItem) {
@@ -44,6 +48,7 @@ public class GalleryAdapter extends ListAdapter<PixabayUrl, GalleryAdapter.MyVie
                         oldItem.largeImageURL.equals(newItem.largeImageURL));
             }
         });
+        this.activity = activity;
     }
 
     @NonNull
@@ -56,11 +61,18 @@ public class GalleryAdapter extends ListAdapter<PixabayUrl, GalleryAdapter.MyVie
             @Override
             public void onClick(View v) {
                 PixabayUrl pixabayUrl = (PixabayUrl) myViewHolder.itemView.getTag(R.id.pixabayLargeUrl);
-                Log.d(TAG, "onClick-pixabayLargeUrl: " + pixabayUrl.largeImageURL);
-                NavController controller = Navigation.findNavController(v);
+//                Log.d(TAG, "onClick-pixabayLargeUrl: " + pixabayUrl.largeImageURL);
+                List<PixabayUrl> pixabayUrlList = getCurrentList();
                 Bundle bundle = new Bundle();
+                bundle.putInt("page_num", getItemCount());
+                bundle.putInt("position", (int) myViewHolder.itemView.getTag(R.id.pixabayPosition));
                 bundle.putParcelable("pixaUrlObject", pixabayUrl);
-                controller.navigate(R.id.action_galleryFragment_to_photoFragment, bundle);
+                bundle.putParcelableArrayList("pixaUrlList", new ArrayList<>(pixabayUrlList));
+                Intent intent = new Intent(activity, PhotoViewActivity.class);
+                intent.putExtra("adapter_object", bundle);
+                activity.startActivity(intent);
+//                NavController controller = Navigation.findNavController(v);
+//                controller.navigate(R.id.action_galleryFragment_to_photoFragment, bundle);
 
             }
         });
@@ -70,11 +82,13 @@ public class GalleryAdapter extends ListAdapter<PixabayUrl, GalleryAdapter.MyVie
     @Override
     public void onBindViewHolder(@NonNull final MyViewHolder holder, int position) {
         PixabayUrl pixabayUrl = getItem(position);
+//        List<PixabayUrl> pixabayUrlList =  getCurrentList();
         holder.shimmerLayout.setShimmerColor(0x55ffffff);
         holder.shimmerLayout.setShimmerAngle(0);
         holder.shimmerLayout.startShimmerAnimation();
         holder.shimmerLayout.startShimmerAnimation();
         holder.itemView.setTag(R.id.pixabayLargeUrl, pixabayUrl);
+        holder.itemView.setTag(R.id.pixabayPosition, position);
         Glide.with(holder.imageView)
                 .load(pixabayUrl.webformatURL)
                 .placeholder(R.drawable.photo)

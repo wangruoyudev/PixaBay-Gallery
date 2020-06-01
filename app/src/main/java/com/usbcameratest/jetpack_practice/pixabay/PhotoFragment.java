@@ -5,11 +5,13 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -38,9 +40,12 @@ public class PhotoFragment extends Fragment {
     private String mParam2;
 
     private FragmentPhotoBinding binding;
-
-    public PhotoFragment() {
+    private int position;
+    private PhotoViewModel viewModel;
+    private TextView pageTextView;
+    public PhotoFragment(int position) {
         // Required empty public constructor
+        this.position = position;
     }
 
     /**
@@ -53,12 +58,13 @@ public class PhotoFragment extends Fragment {
      */
     // TODO: Rename and change types and number of parameters
     public static PhotoFragment newInstance(String param1, String param2) {
-        PhotoFragment fragment = new PhotoFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
+//        PhotoFragment fragment = new PhotoFragment();
+//        Bundle args = new Bundle();
+//        args.putString(ARG_PARAM1, param1);
+//        args.putString(ARG_PARAM2, param2);
+//        fragment.setArguments(args);
+//        return fragment;
+        return null;
     }
 
     @Override
@@ -82,8 +88,13 @@ public class PhotoFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        Bundle bundle = getArguments();
-        PixabayUrl pixabayUrl = bundle.getParcelable("pixaUrlObject");
+
+//        Bundle bundle = getArguments();
+//        PixabayUrl pixabayUrl = bundle.getParcelable("pixaUrlObject");
+        viewModel = new ViewModelProvider(requireActivity(),
+                new ViewModelProvider.NewInstanceFactory()).get(PhotoViewModel.class);
+
+        PixabayUrl pixabayUrl = viewModel.getLiveData().getValue().get(position);
         Log.d(TAG, "pixabayUrl-bundle: " + pixabayUrl.largeImageURL);
         final ShimmerLayout shimmerLayout = binding.photoShimmerLayout;
         shimmerLayout.setShimmerColor(0x55ffffff);
@@ -95,6 +106,7 @@ public class PhotoFragment extends Fragment {
                 .addListener(new RequestListener<Drawable>() {
                     @Override
                     public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                        Log.d(TAG, "onLoadFailed: ", e);
                         shimmerLayout.stopShimmerAnimation();
                         return false;
                     }
@@ -106,5 +118,12 @@ public class PhotoFragment extends Fragment {
                     }
                 })
                 .into(binding.photoLarge);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        pageTextView = requireActivity().findViewById(R.id.page_num);
+        pageTextView.setText((position+1) + "/" + viewModel.getLiveData().getValue().size());
     }
 }

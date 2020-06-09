@@ -1,4 +1,4 @@
-# Come true with longway777's video
+# Come true with longway777
 # PixaBay-Gallery by Java
 Get images from pixa API
 

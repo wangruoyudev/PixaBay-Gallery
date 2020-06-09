@@ -44,6 +44,12 @@ public class PhotoViewActivity extends AppCompatActivity {
             adapter = new ScreenSlidePagerAdapter(this);
             viewPager2.setAdapter(adapter);
             viewPager2.setCurrentItem(position, false);
+            viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+                @Override
+                public void onPageSelected(int position) {
+                    super.onPageSelected(position);
+                }
+            });
         }
 
 

@@ -11,14 +11,14 @@
         android:label="相册"
         tools:layout="@layout/fragment_gallery">
         <action
-            android:id="@+id/action_galleryFragment_to_photoFragment"
-            app:destination="@id/photoFragment"
-            app:enterAnim="@anim/slide_from_right"
-            app:exitAnim="@anim/slide_to_left" />
+            android:id="@+id/action_galleryFragment_to_viewPagerFragment2"
+            app:destination="@id/viewPagerFragment"
+            app:enterAnim="@anim/slide_from_smal"
+            app:popExitAnim="@anim/click_to_origin" />
     </fragment>
     <fragment
-        android:id="@+id/photoFragment"
-        android:name="com.usbcameratest.jetpack_practice.pixabay.PhotoFragment"
+        android:id="@+id/viewPagerFragment"
+        android:name="com.usbcameratest.jetpack_practice.pixabay.ViewPagerFragment"
         android:label="图片"
-        tools:layout="@layout/fragment_photo" />
+        tools:layout="@layout/fragment_view_pager"/>
 </navigation>

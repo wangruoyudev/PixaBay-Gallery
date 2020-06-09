@@ -9,11 +9,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import androidx.navigation.NavController;
+import androidx.navigation.NavOptions;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
@@ -68,11 +70,12 @@ public class GalleryAdapter extends ListAdapter<PixabayUrl, GalleryAdapter.MyVie
                 bundle.putInt("position", (int) myViewHolder.itemView.getTag(R.id.pixabayPosition));
                 bundle.putParcelable("pixaUrlObject", pixabayUrl);
                 bundle.putParcelableArrayList("pixaUrlList", new ArrayList<>(pixabayUrlList));
-                Intent intent = new Intent(activity, PhotoViewActivity.class);
-                intent.putExtra("adapter_object", bundle);
-                activity.startActivity(intent);
-//                NavController controller = Navigation.findNavController(v);
-//                controller.navigate(R.id.action_galleryFragment_to_photoFragment, bundle);
+//                Intent intent = new Intent(activity, PhotoViewActivity.class);
+//                intent.putExtra("adapter_object", bundle);
+//                activity.startActivity(intent);
+//
+                NavController controller = Navigation.findNavController(v);
+                controller.navigate(R.id.action_galleryFragment_to_viewPagerFragment2, bundle);
 
             }
         });
@@ -83,15 +86,25 @@ public class GalleryAdapter extends ListAdapter<PixabayUrl, GalleryAdapter.MyVie
     public void onBindViewHolder(@NonNull final MyViewHolder holder, int position) {
         PixabayUrl pixabayUrl = getItem(position);
 //        List<PixabayUrl> pixabayUrlList =  getCurrentList();
+        holder.itemView.setTag(R.id.pixabayLargeUrl, pixabayUrl);
+        holder.itemView.setTag(R.id.pixabayPosition, position);
+
         holder.shimmerLayout.setShimmerColor(0x55ffffff);
         holder.shimmerLayout.setShimmerAngle(0);
         holder.shimmerLayout.startShimmerAnimation();
         holder.shimmerLayout.startShimmerAnimation();
-        holder.itemView.setTag(R.id.pixabayLargeUrl, pixabayUrl);
-        holder.itemView.setTag(R.id.pixabayPosition, position);
+
+        ViewGroup.LayoutParams layoutParams = holder.imageView.getLayoutParams();
+        layoutParams.height = getItem(position).webformatHeight;
+        holder.imageView.setLayoutParams(layoutParams);
+
+        holder.userName.setText(pixabayUrl.user);
+        holder.likes.setText(String.valueOf(pixabayUrl.likes));
+        holder.favorites.setText(String.valueOf(pixabayUrl.favorites));
+
         Glide.with(holder.imageView)
                 .load(pixabayUrl.webformatURL)
-                .placeholder(R.drawable.photo)
+                .placeholder(R.drawable.photo_placeholder)
                 .listener(new RequestListener<Drawable>() {
                     @Override
                     public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
@@ -112,12 +125,18 @@ public class GalleryAdapter extends ListAdapter<PixabayUrl, GalleryAdapter.MyVie
         private CardView cardView;
         private ImageView imageView;
         private ShimmerLayout shimmerLayout;
+        private TextView userName;
+        private TextView likes;
+        private TextView favorites;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
             cardView = itemView.findViewById(R.id.gallery_card_view);
             imageView = itemView.findViewById(R.id.web_image);
             shimmerLayout = itemView.findViewById(R.id.cell_shimmer_layout);
+            userName = itemView.findViewById(R.id.user_name);
+            likes = itemView.findViewById(R.id.likes);
+            favorites = itemView.findViewById(R.id.favorites);
         }
     }
 }

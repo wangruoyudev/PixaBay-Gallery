@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.util.Log;
@@ -110,6 +111,9 @@ public class GalleryFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         viewModel = new ViewModelProvider(requireActivity(), new ViewModelProvider.AndroidViewModelFactory(requireActivity().getApplication()))
                 .get(GalleryViewModel.class);
+        if (viewModel.getLiveData().getValue() == null) {
+            swipeRefreshLayout.setRefreshing(true);
+        }
         viewModel.getLiveData().observe(getViewLifecycleOwner(), new Observer<List<PixabayUrl>>() {
             @Override
             public void onChanged(List<PixabayUrl> pixabayUrls) {
@@ -123,7 +127,8 @@ public class GalleryFragment extends Fragment {
 
         RecyclerView recyclerView = binding.galleryRecycleView;
         adapter = new GalleryAdapter(requireActivity());
-        recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        recyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
+//        recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
         recyclerView.setAdapter(adapter);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override

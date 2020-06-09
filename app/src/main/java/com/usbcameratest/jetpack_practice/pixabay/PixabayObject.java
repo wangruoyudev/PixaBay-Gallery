@@ -19,17 +19,31 @@ class PixabayUrl implements Parcelable {
     int id;
     String webformatURL;
     String largeImageURL;
+    int webformatWidth;
+    int webformatHeight;
+    String user;
+    int favorites;
+    int likes;
 
-    public PixabayUrl(int id, String webformatURL, String largeImageURL) {
+
+    public PixabayUrl(int id, String webformatURL, String largeImageURL, int webformatWidth, int webformatHeight) {
         this.id = id;
         this.webformatURL = webformatURL;
         this.largeImageURL = largeImageURL;
+        this.webformatWidth = webformatWidth;
+        this.webformatHeight = webformatHeight;
     }
+
 
     protected PixabayUrl(Parcel in) {
         id = in.readInt();
         webformatURL = in.readString();
         largeImageURL = in.readString();
+        webformatWidth = in.readInt();
+        webformatHeight = in.readInt();
+        user = in.readString();
+        favorites = in.readInt();
+        likes = in.readInt();
     }
 
     @Override
@@ -37,6 +51,11 @@ class PixabayUrl implements Parcelable {
         dest.writeInt(id);
         dest.writeString(webformatURL);
         dest.writeString(largeImageURL);
+        dest.writeInt(webformatWidth);
+        dest.writeInt(webformatHeight);
+        dest.writeString(user);
+        dest.writeInt(favorites);
+        dest.writeInt(likes);
     }
 
     @Override

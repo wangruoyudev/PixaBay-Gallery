@@ -17,6 +17,7 @@ import androidx.cardview.widget.CardView;
 import androidx.navigation.NavController;
 import androidx.navigation.NavOptions;
 import androidx.navigation.Navigation;
+import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
@@ -34,7 +35,7 @@ import java.util.zip.Inflater;
 
 import io.supercharge.shimmerlayout.ShimmerLayout;
 
-public class GalleryAdapter extends ListAdapter<PixabayUrl, GalleryAdapter.MyViewHolder> {
+public class GalleryAdapter extends PagedListAdapter<PixabayUrl, GalleryAdapter.MyViewHolder> {
     private static final String TAG = "GalleryAdapter";
     private Activity activity;
     protected GalleryAdapter(Activity activity) {

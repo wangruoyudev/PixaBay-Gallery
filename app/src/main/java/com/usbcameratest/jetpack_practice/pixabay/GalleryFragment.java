@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.paging.PagedList;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
@@ -100,8 +101,9 @@ public class GalleryFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.fresh_item) {
-            swipeRefreshLayout.setRefreshing(true);
-            viewModel.queryImageData();
+//            swipeRefreshLayout.setRefreshing(true);
+//            viewModel.queryImageData();
+            viewModel.resetQuery();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -111,13 +113,14 @@ public class GalleryFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         viewModel = new ViewModelProvider(requireActivity(), new ViewModelProvider.AndroidViewModelFactory(requireActivity().getApplication()))
                 .get(GalleryViewModel.class);
-        if (viewModel.getLiveData().getValue() == null) {
+        if (viewModel.getPagedListLiveData().getValue() == null) {
+            Log.d(TAG, "onActivityCreated: getValue null");
             swipeRefreshLayout.setRefreshing(true);
         }
-        viewModel.getLiveData().observe(getViewLifecycleOwner(), new Observer<List<PixabayUrl>>() {
+        viewModel.getPagedListLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<PixabayUrl>>() {
             @Override
-            public void onChanged(List<PixabayUrl> pixabayUrls) {
-                Log.d(TAG, "onChanged: " + pixabayUrls);
+            public void onChanged(PagedList<PixabayUrl> pixabayUrls) {
+                Log.d(TAG, "onChanged111: " + pixabayUrls);
                 if (swipeRefreshLayout.isRefreshing()) {
                     swipeRefreshLayout.setRefreshing(false);
                 }
@@ -133,7 +136,7 @@ public class GalleryFragment extends Fragment {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                viewModel.queryImageData();
+                viewModel.resetQuery();
             }
         });
 //        viewModel.queryImageData();

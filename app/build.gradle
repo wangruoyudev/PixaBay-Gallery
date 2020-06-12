@@ -31,7 +31,7 @@ android {
 dependencies {
     def lifecycle_version = "2.2.0"
     def navigation_version = "2.3.0-alpha02"
-    def paging_version = "2.1.1"
+    def paging_version = "2.1.2"
     implementation "androidx.paging:paging-runtime:$paging_version"
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 

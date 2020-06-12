@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -20,6 +21,7 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -37,7 +39,12 @@ import io.supercharge.shimmerlayout.ShimmerLayout;
 public class GalleryAdapter extends ListAdapter<PixabayUrl, GalleryAdapter.MyViewHolder> {
     private static final String TAG = "GalleryAdapter";
     private Activity activity;
-    protected GalleryAdapter(Activity activity) {
+    private GalleryViewModel viewModel;
+    private static final int NORMAL_VIEW_TYPE = 0;
+    private static final int FOOTER_VIEW_TYPE = 1;
+    private int footviewStatus;
+
+    protected GalleryAdapter(Activity activity, GalleryViewModel viewModel) {
         super(new DiffUtil.ItemCallback<PixabayUrl>() {
             @Override
             public boolean areItemsTheSame(@NonNull PixabayUrl oldItem, @NonNull PixabayUrl newItem) {
@@ -51,40 +58,90 @@ public class GalleryAdapter extends ListAdapter<PixabayUrl, GalleryAdapter.MyVie
             }
         });
         this.activity = activity;
+        this.viewModel = viewModel;
+    }
+
+    public void setFootviewStatus(int footviewStatus) {
+        this.footviewStatus = footviewStatus;
     }
 
     @NonNull
     @Override
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-        View view = layoutInflater.inflate(R.layout.cell_gallery_card, parent, false);
-        final MyViewHolder myViewHolder = new MyViewHolder(view);
-        myViewHolder.cardView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                PixabayUrl pixabayUrl = (PixabayUrl) myViewHolder.itemView.getTag(R.id.pixabayLargeUrl);
+        final View view;
+        final MyViewHolder myViewHolder;
+        if (viewType == NORMAL_VIEW_TYPE) {
+            Log.d(TAG, "onCreateViewHolder-NORMAL_VIEW_TYPE: ");
+            view = layoutInflater.inflate(R.layout.cell_gallery_card, parent, false);
+            myViewHolder = new MyViewHolder(view);
+            myViewHolder.cardView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    PixabayUrl pixabayUrl = (PixabayUrl) myViewHolder.itemView.getTag(R.id.pixabayLargeUrl);
 //                Log.d(TAG, "onClick-pixabayLargeUrl: " + pixabayUrl.largeImageURL);
-                List<PixabayUrl> pixabayUrlList = getCurrentList();
-                Bundle bundle = new Bundle();
-                bundle.putInt("page_num", getItemCount());
-                bundle.putInt("position", (int) myViewHolder.itemView.getTag(R.id.pixabayPosition));
-                bundle.putParcelable("pixaUrlObject", pixabayUrl);
-                bundle.putParcelableArrayList("pixaUrlList", new ArrayList<>(pixabayUrlList));
-//                Intent intent = new Intent(activity, PhotoViewActivity.class);
-//                intent.putExtra("adapter_object", bundle);
-//                activity.startActivity(intent);
+                    List<PixabayUrl> pixabayUrlList = getCurrentList();
+                    Bundle bundle = new Bundle();
+                    bundle.putInt("page_num", getItemCount());
+                    bundle.putInt("position", (int) myViewHolder.itemView.getTag(R.id.pixabayPosition));
+                    bundle.putParcelable("pixaUrlObject", pixabayUrl);
+                    bundle.putParcelableArrayList("pixaUrlList", new ArrayList<>(pixabayUrlList));
+//                    Intent intent = new Intent(activity, PhotoViewActivity.class);
+//                    intent.putExtra("adapter_object", bundle);
+//                    activity.startActivity(intent);
 //
-                NavController controller = Navigation.findNavController(v);
-                controller.navigate(R.id.action_galleryFragment_to_viewPagerFragment2, bundle);
+                    NavController controller = Navigation.findNavController(v);
+                    controller.navigate(R.id.action_galleryFragment_to_viewPagerFragment2, bundle);
 
-            }
-        });
+                }
+            });
+        } else {
+            Log.d(TAG, "onCreateViewHolder: footer_view");
+            view = layoutInflater.inflate(R.layout.footer_view, parent, false);
+            StaggeredGridLayoutManager.LayoutParams layoutParams = (StaggeredGridLayoutManager.LayoutParams)view.getLayoutParams();
+            layoutParams.setFullSpan(true);
+            view.setLayoutParams(layoutParams);
+            myViewHolder = new MyViewHolder(view);
+            TextView textView = myViewHolder.itemView.findViewById(R.id.status_text);
+            textView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.d(TAG, "onClick: text");
+                    viewModel.queryImageData();
+                    viewModel.getLiveDataFresh().setValue(true);
+                }
+            });
+        }
         return myViewHolder;
     }
 
     @Override
     public void onBindViewHolder(@NonNull final MyViewHolder holder, int position) {
+        if (position == getItemCount() - 1) {
+            TextView textView = holder.itemView.findViewById(R.id.status_text);
+            ProgressBar progressBar = holder.itemView.findViewById(R.id.progressBar);
+            Log.d(TAG, "onBindViewHolder: " + footviewStatus);
+            if (textView != null) {
+                Log.d(TAG, "onBindViewHolder111: " + footviewStatus);
+                if (footviewStatus == GalleryRepository.NORMAL_LOADING) {
+                    progressBar.setVisibility(View.VISIBLE);
+                    textView.setText("正在加载中...");
+                } else if (footviewStatus == GalleryRepository.LOADING_DONE) {
+                    progressBar.setVisibility(View.INVISIBLE);
+                    textView.setText("没有更多的数据了");
+                } else if (footviewStatus == GalleryRepository.LOADING_ERROR) {
+                    progressBar.setVisibility(View.INVISIBLE);
+                    textView.setText("网络错误，点击重试或下拉刷新");
+                }
+            }
+            return;
+        }
+        Log.d(TAG, "onBindViewHolder-Normal: ");
         PixabayUrl pixabayUrl = getItem(position);
+        if (pixabayUrl.id == -1) {
+            holder.itemView.setVisibility(View.INVISIBLE);
+            return;
+        }
 //        List<PixabayUrl> pixabayUrlList =  getCurrentList();
         holder.itemView.setTag(R.id.pixabayLargeUrl, pixabayUrl);
         holder.itemView.setTag(R.id.pixabayPosition, position);
@@ -119,6 +176,24 @@ public class GalleryAdapter extends ListAdapter<PixabayUrl, GalleryAdapter.MyVie
                     }
                 })
                 .into(holder.imageView);
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (position == getItemCount() - 1) {
+            return FOOTER_VIEW_TYPE;
+        }
+        return NORMAL_VIEW_TYPE;
+//        return super.getItemViewType(position);
+    }
+
+    @Override
+    public int getItemCount() {
+        if (super.getItemCount() == 0) {
+            return super.getItemCount();
+        }
+        return super.getItemCount() + 1;
+//        return super.getItemCount();
     }
 
     static class MyViewHolder extends RecyclerView.ViewHolder{

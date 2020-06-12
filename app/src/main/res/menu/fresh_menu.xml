@@ -5,4 +5,7 @@
     <item
         android:id="@+id/fresh_item"
         android:title="下拉刷新" />
+    <item
+        android:id="@+id/delete_item"
+        android:title="删除测试" />
 </menu>

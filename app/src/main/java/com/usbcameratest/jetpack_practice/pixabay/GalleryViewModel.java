@@ -12,6 +12,8 @@ import java.util.List;
 
 public class GalleryViewModel extends AndroidViewModel {
     private static final String TAG = "GalleryViewModel";
+    private MutableLiveData<Boolean> liveDataFresh;
+    private MutableLiveData<Integer> liveDataStatus;
     private MutableLiveData<List<PixabayUrl>> liveData;
     private GalleryRepository repository;
     public GalleryViewModel(@NonNull Application application) {
@@ -23,12 +25,37 @@ public class GalleryViewModel extends AndroidViewModel {
         if (liveData == null) {
             Log.d(TAG, "getLiveData: new");
             liveData = new MutableLiveData<List<PixabayUrl>>();
-            queryImageData();
+            resetquery();
         }
         return liveData;
     }
 
+    public MutableLiveData<Integer> getLiveDataStatus() {
+        if (liveDataStatus == null) {
+            liveDataStatus = new MutableLiveData<Integer>();
+        }
+        return liveDataStatus;
+    }
+
+    public MutableLiveData<Boolean> getLiveDataFresh() {
+        if (liveDataFresh == null) {
+            liveDataFresh = new MutableLiveData<>();
+        }
+        return liveDataFresh;
+    }
+
     public void queryImageData () {
         repository.queryPixaImageList();
+    }
+
+    public void resetquery () {
+        repository.resetQueryPixaImage();
+    }
+
+    void setNeedSroll (Boolean bool) {
+        repository.setNeedToScrollToTop(bool);
+    }
+    Boolean getNeedSroll () {
+        return repository.getNeedToScrollToTop();
     }
 }

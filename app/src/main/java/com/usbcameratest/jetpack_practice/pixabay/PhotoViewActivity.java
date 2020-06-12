@@ -2,6 +2,7 @@ package com.usbcameratest.jetpack_practice.pixabay;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,6 +18,7 @@ import com.usbcameratest.jetpack_practice.databinding.ActivityPhotoViewBinding;
 import java.util.ArrayList;
 
 public class PhotoViewActivity extends AppCompatActivity {
+    private static final String TAG = "PhotoViewActivity";
     private ActivityPhotoViewBinding binding;
     private int page_num;
     private int position;
@@ -41,6 +43,7 @@ public class PhotoViewActivity extends AppCompatActivity {
             pixabayUrlArrayList = bundle.getParcelableArrayList("pixaUrlList");
             viewModel.getLiveData().setValue(pixabayUrlArrayList);
             viewPager2 = binding.viewPager2;
+//            viewPager2.setOrientation(ViewPager2.ORIENTATION_VERTICAL);
             adapter = new ScreenSlidePagerAdapter(this);
             viewPager2.setAdapter(adapter);
             viewPager2.setCurrentItem(position, false);
@@ -65,6 +68,7 @@ public class PhotoViewActivity extends AppCompatActivity {
         @NonNull
         @Override
         public Fragment createFragment(int position) {
+            Log.d(TAG, "createFragment: " + position);
             return new PhotoFragment(position);
         }
 

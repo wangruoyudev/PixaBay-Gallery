@@ -43,6 +43,7 @@ public class GalleryAdapter extends ListAdapter<PixabayUrl, GalleryAdapter.MyVie
     private static final int NORMAL_VIEW_TYPE = 0;
     private static final int FOOTER_VIEW_TYPE = 1;
     private int footviewStatus;
+    private Boolean isClickable = false;
 
     protected GalleryAdapter(Activity activity, GalleryViewModel viewModel) {
         super(new DiffUtil.ItemCallback<PixabayUrl>() {
@@ -106,9 +107,11 @@ public class GalleryAdapter extends ListAdapter<PixabayUrl, GalleryAdapter.MyVie
             textView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.d(TAG, "onClick: text");
-                    viewModel.queryImageData();
-                    viewModel.getLiveDataFresh().setValue(true);
+                    if (isClickable) {
+                        Log.d(TAG, "onClick: text");
+                        viewModel.queryImageData();
+                        viewModel.getLiveDataFresh().setValue(true);
+                    }
                 }
             });
         }
@@ -124,12 +127,15 @@ public class GalleryAdapter extends ListAdapter<PixabayUrl, GalleryAdapter.MyVie
             if (textView != null) {
                 Log.d(TAG, "onBindViewHolder111: " + footviewStatus);
                 if (footviewStatus == GalleryRepository.NORMAL_LOADING) {
+                    isClickable = false;
                     progressBar.setVisibility(View.VISIBLE);
                     textView.setText("正在加载中...");
                 } else if (footviewStatus == GalleryRepository.LOADING_DONE) {
+                    isClickable = false;
                     progressBar.setVisibility(View.INVISIBLE);
                     textView.setText("没有更多的数据了");
                 } else if (footviewStatus == GalleryRepository.LOADING_ERROR) {
+                    isClickable = true;
                     progressBar.setVisibility(View.INVISIBLE);
                     textView.setText("网络错误，点击重试或下拉刷新");
                 }

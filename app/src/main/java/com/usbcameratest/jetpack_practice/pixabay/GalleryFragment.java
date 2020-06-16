@@ -22,6 +22,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.usbcameratest.jetpack_practice.R;
 import com.usbcameratest.jetpack_practice.databinding.FragmentGalleryBinding;
@@ -85,6 +86,7 @@ public class GalleryFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+        Log.d(TAG, "onCreateView: ");
         binding = FragmentGalleryBinding.inflate(getLayoutInflater());
         swipeRefreshLayout = binding.gallerySwipeRefreshLayout;
         return binding.getRoot();
@@ -110,33 +112,59 @@ public class GalleryFragment extends Fragment {
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        Log.d(TAG, "onActivityCreated: ");
         super.onActivityCreated(savedInstanceState);
-        viewModel = new ViewModelProvider(requireActivity(), new ViewModelProvider.AndroidViewModelFactory(requireActivity().getApplication()))
+        viewModel = new ViewModelProvider(this, new ViewModelProvider.AndroidViewModelFactory(requireActivity().getApplication()))
                 .get(GalleryViewModel.class);
-        if (viewModel.getPagedListLiveData().getValue() == null) {
-            Log.d(TAG, "onActivityCreated: getValue null");
-            swipeRefreshLayout.setRefreshing(true);
-        }
+//        if (viewModel.getPagedListLiveData().getValue() == null) {
+//            Log.d(TAG, "onActivityCreated: getValue null");
+//            swipeRefreshLayout.setRefreshing(true);
+//        }
         viewModel.getPagedListLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<PixabayUrl>>() {
             @Override
             public void onChanged(PagedList<PixabayUrl> pixabayUrls) {
                 Log.d(TAG, "onChanged111: " + pixabayUrls);
-                if (swipeRefreshLayout.isRefreshing()) {
-                    swipeRefreshLayout.setRefreshing(false);
-                }
+//                if (swipeRefreshLayout.isRefreshing()) {
+//                    swipeRefreshLayout.setRefreshing(false);
+//                }
                 adapter.submitList(pixabayUrls);
+            }
+        });
+        viewModel.getNetLiveData().observe(getViewLifecycleOwner(), new Observer<Integer>() {
+            @Override
+            public void onChanged(Integer integer) {
+                Log.d(TAG, "onChanged: " + integer);
+                adapter.setNetStatus(integer);
+                if (integer != PixabayDataSource.INIT_LOAD) {
+                    if (swipeRefreshLayout.isRefreshing()) {
+                        swipeRefreshLayout.setRefreshing(false);
+                    }
+                } else {
+                    swipeRefreshLayout.setRefreshing(true);
+                }
+                if (integer.equals(PixabayDataSource.ERROR_LOADING)) {
+                    Toast.makeText(requireActivity(), "网络错误", Toast.LENGTH_SHORT).show();
+                } else if (integer.equals(PixabayDataSource.DONE_LOADING)) {
+                    Toast.makeText(requireActivity(), "已经全部加载完毕", Toast.LENGTH_SHORT).show();
+                } else if (integer.equals(PixabayDataSource.NET_LOADING)) {
+                    Toast.makeText(requireActivity(), "正在加载", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
         RecyclerView recyclerView = binding.galleryRecycleView;
-        adapter = new GalleryAdapter(requireActivity());
-        recyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
+        adapter = new GalleryAdapter(viewModel);
+        StaggeredGridLayoutManager manager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
+        manager.setGapStrategy(StaggeredGridLayoutManager.GAP_HANDLING_NONE);
+        recyclerView.setLayoutManager(manager);
+//        recyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
 //        recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
         recyclerView.setAdapter(adapter);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 viewModel.resetQuery();
+                viewModel.getNetLiveData().setValue(PixabayDataSource.INIT_LOAD);
             }
         });
 //        viewModel.queryImageData();

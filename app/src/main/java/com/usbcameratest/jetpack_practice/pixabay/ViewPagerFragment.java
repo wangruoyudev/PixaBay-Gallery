@@ -74,9 +74,8 @@ public class ViewPagerFragment extends Fragment {
         Bundle bundle = getArguments();
         if (bundle != null) {
             textView = binding.serialNumView;
-            final int page_num = bundle.getInt("page_num");
             final int position = bundle.getInt("position");
-            ArrayList<PixabayUrl> pixabayUrlArrayList = bundle.getParcelableArrayList("pixaUrlList");
+            final ArrayList<PixabayUrl> pixabayUrlArrayList = bundle.getParcelableArrayList("pixaUrlList");
             viewPager2 = binding.viewPager2View;
             ViewPagerListAdapter adapter = new ViewPagerListAdapter();
             adapter.submitList(pixabayUrlArrayList);
@@ -85,7 +84,7 @@ public class ViewPagerFragment extends Fragment {
                 @Override
                 public void onPageSelected(int position) {
                     super.onPageSelected(position);
-                    String pageNum = getString(R.string.page_num, position + 1, page_num);
+                    String pageNum = getString(R.string.page_num, position + 1, pixabayUrlArrayList.size());
                     textView.setText(pageNum);
 
                 }

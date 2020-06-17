@@ -1,6 +1,7 @@
 package com.usbcameratest.jetpack_practice.pixabay;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -22,6 +23,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.usbcameratest.jetpack_practice.R;
@@ -97,6 +100,33 @@ public class GalleryFragment extends Fragment {
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.fresh_menu, menu);
+        SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+        searchView.setMaxWidth(600);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                Log.d(TAG, "onQueryTextSubmit: 111");
+                viewModel.searchQuery(query);
+                viewModel.getNetLiveData().setValue(PixabayDataSource.INIT_LOAD);
+                InputMethodManager imm = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (imm != null && getView() != null) {
+                    imm.hideSoftInputFromWindow(getView().getWindowToken(),0);
+                }
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+        searchView.setOnSearchClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "onClick: 11111");
+            }
+        });
+
 
     }
 
@@ -141,13 +171,6 @@ public class GalleryFragment extends Fragment {
                     }
                 } else {
                     swipeRefreshLayout.setRefreshing(true);
-                }
-                if (integer.equals(PixabayDataSource.ERROR_LOADING)) {
-                    Toast.makeText(requireActivity(), "网络错误", Toast.LENGTH_SHORT).show();
-                } else if (integer.equals(PixabayDataSource.DONE_LOADING)) {
-                    Toast.makeText(requireActivity(), "已经全部加载完毕", Toast.LENGTH_SHORT).show();
-                } else if (integer.equals(PixabayDataSource.NET_LOADING)) {
-                    Toast.makeText(requireActivity(), "正在加载", Toast.LENGTH_SHORT).show();
                 }
             }
         });

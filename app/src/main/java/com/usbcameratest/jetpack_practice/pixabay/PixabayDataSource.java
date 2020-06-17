@@ -31,7 +31,8 @@ public class PixabayDataSource extends PageKeyedDataSource<Integer, PixabayUrl> 
     static final int DONE_LOADING = 1;
     static final int ERROR_LOADING = 2;
     static final int INIT_LOAD = 3;
-    static final int INIT_LOAD_DONE = 4;
+    static final int INIT_LOAD_DONE = 4; // 标记一次请求的加载完成，init和after的response都用来标记
+    static final int INIT_NOTHING = 5; // 第一次搜索就什么都没搜到的情况
 
     private LoadInitialParams<Integer> roolBackparams;
     private LoadInitialCallback<Integer, PixabayUrl> roolBackCallback;
@@ -44,7 +45,8 @@ public class PixabayDataSource extends PageKeyedDataSource<Integer, PixabayUrl> 
         queue = VolleryObject.getInstance(context);
         this.viewModel = viewModel;
     }
-    
+
+
     void reTry () {
         Log.d(TAG, "reTry: 11111");
         if (roolBackparams != null || roolBackCallback != null) {
@@ -56,8 +58,15 @@ public class PixabayDataSource extends PageKeyedDataSource<Integer, PixabayUrl> 
 
     @Override
     public void loadInitial(@NonNull final LoadInitialParams<Integer> params, @NonNull final LoadInitialCallback<Integer, PixabayUrl> callback) {
-        Random random = new Random();
-        keyWord = imageTypeList[random.nextInt(imageTypeList.length)];
+        String searchKeyWord = viewModel.getSearchKeyWord();
+        Log.d(TAG, "loadInitial-searchKeyWord: " + searchKeyWord);
+        if (!searchKeyWord.isEmpty()) {
+            keyWord = searchKeyWord;
+            viewModel.setSearchKeyWord(""); // 防止下次刷新的误判
+        } else {
+            Random random = new Random();
+            keyWord = imageTypeList[random.nextInt(imageTypeList.length)];
+        }
         String queryUrl = url + "q=" + keyWord + "&image_type=photo" + "&per_page=" + per_page + "&page=1";
         Log.d(TAG, "queryPixaImageList-queryUrl: " + queryUrl);
         viewModel.getNetLiveData().postValue(INIT_LOAD);
@@ -69,12 +78,16 @@ public class PixabayDataSource extends PageKeyedDataSource<Integer, PixabayUrl> 
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        viewModel.getNetLiveData().postValue(INIT_LOAD_DONE);
                         Log.d(TAG, "onResponse: " + response);
                         Gson gson = new Gson();
                         PixabayObject pixabayObject = gson.fromJson(response, PixabayObject.class);
-                        List<PixabayUrl> list = Arrays.asList(pixabayObject.hits);
-                        callback.onResult(list, null, 2);
+                        if (pixabayObject.hits.length == 0) {
+                            viewModel.getNetLiveData().postValue(INIT_NOTHING);
+                        } else {
+                            viewModel.getNetLiveData().postValue(INIT_LOAD_DONE);
+                            List<PixabayUrl> list = Arrays.asList(pixabayObject.hits);
+                            callback.onResult(list, null, 2);
+                        }
                     }
                 },
                 new Response.ErrorListener() {
@@ -97,6 +110,7 @@ public class PixabayDataSource extends PageKeyedDataSource<Integer, PixabayUrl> 
 
     @Override
     public void loadAfter(@NonNull final LoadParams<Integer> params, @NonNull final LoadCallback<Integer, PixabayUrl> callback) {
+        Log.d(TAG, "loadAfter: ");
         String queryUrl = url + "q=" + keyWord + "&image_type=photo" + "&per_page=" + per_page + "&page=" + params.key;
         Log.d(TAG, "queryPixaImageList-queryUrl: " + queryUrl);
         viewModel.getNetLiveData().postValue(NET_LOADING);
@@ -108,10 +122,15 @@ public class PixabayDataSource extends PageKeyedDataSource<Integer, PixabayUrl> 
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
+                        viewModel.getNetLiveData().postValue(INIT_LOAD_DONE);
                         Log.d(TAG, "onResponse: " + response);
                         Gson gson = new Gson();
                         PixabayObject pixabayObject = gson.fromJson(response, PixabayObject.class);
                         List<PixabayUrl> list = Arrays.asList(pixabayObject.hits);
+                        if (pixabayObject.hits.length == 0) { // 稀有图片不足50张，还是会触发一下after
+                            // 但是数组是空的，这种情况判断为全部加载完成
+                            viewModel.getNetLiveData().postValue(DONE_LOADING);
+                        }
                         callback.onResult(list, params.key + 1);
                     }
                 },

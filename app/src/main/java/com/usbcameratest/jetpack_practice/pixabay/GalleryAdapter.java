@@ -92,7 +92,7 @@ public class GalleryAdapter extends PagedListAdapter<PixabayUrl, RecyclerView.Vi
         //第一次刚加载的时候，不显示底部的footerView
         int num =  super.getItemCount() + (hasFooter ?
                 1 : 0);
-        Log.d(TAG, "getItemCount: " + num);
+//        Log.d(TAG, "getItemCount: " + num);
         return num;
 //        return super.getItemCount();
     }
@@ -100,7 +100,7 @@ public class GalleryAdapter extends PagedListAdapter<PixabayUrl, RecyclerView.Vi
     @Override
     public int getItemViewType(int position) {
         if ((position == getItemCount() - 1) && hasFooter) {
-            Log.d(TAG, "getItemViewType: " + position);
+//            Log.d(TAG, "getItemViewType: " + position);
             return FOOTER_HOLDER;
         } else {
             return PHOTO_HOLDER;
@@ -128,7 +128,7 @@ public class GalleryAdapter extends PagedListAdapter<PixabayUrl, RecyclerView.Vi
                 }
             });
         } else {
-            Log.d(TAG, "onCreateViewHolder: footerHolder");
+//            Log.d(TAG, "onCreateViewHolder: footerHolder");
             holder = FooterViewHolder.getInstance(parent);
             ((FooterViewHolder) holder).textView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -232,7 +232,7 @@ public class GalleryAdapter extends PagedListAdapter<PixabayUrl, RecyclerView.Vi
         }
 
         void onBindWithFooter(int netStatus) {
-            Log.d(TAG, "onBindWithFooter-netStatus: " + netStatus);
+//            Log.d(TAG, "onBindWithFooter-netStatus: " + netStatus);
             if (netStatus == PixabayDataSource.NET_LOADING) {
                 progressBar.setVisibility(View.VISIBLE);
                 textView.setText("正在加载");
@@ -242,6 +242,9 @@ public class GalleryAdapter extends PagedListAdapter<PixabayUrl, RecyclerView.Vi
             } else if (netStatus == PixabayDataSource.ERROR_LOADING) {
                 progressBar.setVisibility(View.GONE);
                 textView.setText("网络错误请点击重试");
+            } else if (netStatus == PixabayDataSource.INIT_NOTHING) {
+                progressBar.setVisibility(View.GONE);
+                textView.setText("搜索不到任何相关的图片");
             }
         }
     }
